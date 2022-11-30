@@ -4,5 +4,7 @@
     "elixir/advent2022/.elixir_ls": true,
     "elixir/advent2022/advent2022": true,
     "elixir/advent2022/deps": true
-  }
+  },
+  "elixirLS.projectDir": "./elixir/advent2022",
+  "elixirLS.enableTestLenses": true,
 }

@@ -11,12 +11,12 @@ defmodule Advent2022 do
     runner.(input)
   end
 
-  defp determine_day([]) do
+  def determine_day([]) do
     {:ok, %DateTime{day: day}} = DateTime.now("Europe/Amsterdam", Tz.TimeZoneDatabase)
     day
   end
 
-  defp determine_day([arg0 | _]) do
+  def determine_day([arg0 | _]) do
     {i, _} = Integer.parse(arg0)
     i
   end

@@ -1,0 +1,32 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "run elixir tests",
+      "type": "shell",
+      "problemMatcher": [
+        { "base": "$mixTestFailure"
+        , "fileLocation": ["relative", "${workspaceFolder}/elixir/advent2022"]
+        }
+      ],
+      "options": {"cwd": "elixir/advent2022"},
+      "command": "mix test"
+    },
+    {
+      "label": "run elixir today",
+      "type": "shell",
+      "problemMatcher": [
+        { "base": "$mixCompileError"
+        , "fileLocation": ["relative", "${workspaceFolder}/elixir/advent2022"]
+        },
+        // { "base": "$mixCompileWarning"
+        // , "fileLocation": ["relative", "${workspaceFolder}/elixir/advent2022"]
+        // },
+      ],
+      "options": {"cwd": "elixir/advent2022"},
+      "command": "mix escript.build && ./advent2022"
+    }
+  ]
+}
