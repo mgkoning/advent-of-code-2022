@@ -1,0 +1,1 @@
+Directory for puzzle inputs, with names in the format "day00.txt".
