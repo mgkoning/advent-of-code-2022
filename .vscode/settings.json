@@ -7,4 +7,6 @@
   },
   "elixirLS.projectDir": "./elixir/advent2022",
   "elixirLS.enableTestLenses": true,
+  "elixirTestExplorer.enable": true,
+  "testExplorer.useNativeTesting": true
 }
