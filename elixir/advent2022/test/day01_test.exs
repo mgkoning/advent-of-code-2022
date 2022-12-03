@@ -1,5 +1,5 @@
 defmodule Advent2022.Day01.Test do
-  alias Advent2022.Day01
+  import Advent2022.Day01
   use ExUnit.Case
 
   @sample_input "1000
@@ -18,6 +18,8 @@ defmodule Advent2022.Day01.Test do
 10000"
 
   test "sample input" do
-    assert Day01.solve(@sample_input) == :ok
+    burdens = @sample_input |> burdens_by_heaviest()
+    assert sum_topN(burdens, 1) == 24000
+    assert sum_topN(burdens, 3) == 45000
   end
 end
