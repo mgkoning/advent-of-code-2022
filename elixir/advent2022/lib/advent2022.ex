@@ -1,7 +1,8 @@
 defmodule Advent2022 do
   @days %{
     1 => &Advent2022.Day01.solve/1,
-    2 => &Advent2022.Day02.solve/1
+    2 => &Advent2022.Day02.solve/1,
+    3 => &Advent2022.Day03.solve/1,
   }
 
   def main(argv) do
