@@ -3,7 +3,11 @@
     "elixir/advent2022/_build": true,
     "elixir/advent2022/.elixir_ls": true,
     "elixir/advent2022/advent2022": true,
-    "elixir/advent2022/deps": true
+    "elixir/advent2022/deps": true,
+
+    "kotlin/advent2022/.gradle": true,
+    "kotlin/advent2022/app/build": true,
+    "kotlin/advent2022/build": true,
   },
   "elixirLS.projectDir": "./elixir/advent2022",
   "elixirLS.enableTestLenses": true,
