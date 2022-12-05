@@ -4,6 +4,7 @@ defmodule Advent2022 do
     2 => &Advent2022.Day02.solve/1,
     3 => &Advent2022.Day03.solve/1,
     4 => &Advent2022.Day04.solve/1,
+    5 => &Advent2022.Day05.solve/1,
   }
 
   def main(argv) do
