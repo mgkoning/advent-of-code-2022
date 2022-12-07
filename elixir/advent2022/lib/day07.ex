@@ -5,22 +5,17 @@ defmodule Advent2022.Day07 do
     tree = build_directory_tree(input)
     IO.puts("Part 1:")
     {top_size, _} = disk_usage = determine_disk_usage(tree)
-    IO.puts(find_dirs(disk_usage, fn s -> s <= 100000 end) |> Enum.sum())
+    disk_usage_list = disk_usage |> tree_to_list()
+    IO.puts(disk_usage_list |> Enum.filter(fn s -> s <= 100000 end) |> Enum.sum())
     IO.puts("Part 2:")
     total_size = 70000000
     required_size = 30000000
     needed = required_size - (total_size - top_size)
-    IO.puts(find_dirs(disk_usage, fn s -> needed <= s end) |> Enum.sort() |> Enum.fetch!(0))
+    IO.puts(disk_usage_list |> Enum.filter(fn s -> needed <= s end) |> Enum.sort() |> Enum.fetch!(0))
   end
 
-  def find_dirs({size, subtree}, match_fn) do
-    sub_dir_sizes = Map.values(subtree) |> Enum.flat_map(&find_dirs(&1, match_fn))
-    if match_fn.(size), do: [size | sub_dir_sizes], else: sub_dir_sizes
-  end
-
-  def find_dirs_at_least({size, subtree}, at_least_size) do
-    sub_dir_sizes = Map.values(subtree) |> Enum.flat_map(&find_dirs_at_least(&1, at_least_size))
-    if size <= at_least_size, do: sub_dir_sizes, else: [size | sub_dir_sizes]
+  def tree_to_list({size, subtree}) do
+    [size | Map.values(subtree) |> Enum.flat_map(&tree_to_list/1)]
   end
 
   def determine_disk_usage({size, subtree}) do

@@ -40,8 +40,11 @@ $ ls
       {48381165, %{"a" => {94853, %{"e" => {584, %{}}}}, "d" => {24933642, %{}}}}
   end
 
-  test "find_dirs_part1" do
-    sizes = find_dirs(determine_disk_usage(build_directory_tree(@sample_input)), fn s -> s <= 100000 end)
+  test "part1" do
+    sizes = build_directory_tree(@sample_input)
+    |> determine_disk_usage()
+    |> tree_to_list()
+    |> Enum.filter(fn s -> s <= 100000 end)
     assert Enum.sum(sizes) == 95437
   end
 end
