@@ -8,4 +8,8 @@ defmodule Advent2022.Input do
     |> Enum.map(&map_elements_fn.(&1))
     |> List.to_tuple()
   end
+
+  def enumerated(enumerable) do
+    Stream.zip(Stream.iterate(0, &(&1 + 1)), enumerable)
+  end
 end
