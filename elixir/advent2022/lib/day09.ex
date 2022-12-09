@@ -4,10 +4,13 @@ defmodule Advent2022.Day09 do
   def solve(input) do
     instructions = read_instructions(input)
     IO.puts("Part 1:")
-    tail_visits = sim_rope(instructions, 2)
-    IO.puts(tail_visits |> Enum.count())
-    tail_visits = sim_rope(instructions, 10)
-    IO.puts(tail_visits |> Enum.count())
+    tail_visits_1 = sim_rope(instructions, 2)
+    IO.puts(tail_visits_1 |> Enum.count())
+    # show_tail_visits(tail_visits_1)
+    IO.puts("Part 2:")
+    tail_visits_2 = sim_rope(instructions, 10)
+    IO.puts(tail_visits_2 |> Enum.count())
+    # show_tail_visits(tail_visits_2)
   end
 
   @origin { 0, 0 }
@@ -47,5 +50,17 @@ defmodule Advent2022.Day09 do
     |> Stream.flat_map(fn line ->
       [dir, count] = Input.words(line)
       List.duplicate(dir, String.to_integer(count)) end)
+  end
+
+  # Just for fun
+  defp show_tail_visits(visits) do
+    xs = visits |> Enum.map(&elem(&1, 0))
+    ys = visits |> Enum.map(&elem(&1, 1))
+    for y <- Enum.min(ys)..Enum.max(ys) do
+      Enum.min(xs)..Enum.max(xs)
+      |> Enum.map(fn x -> if MapSet.member?(visits, {x, y}), do: ?#, else: ?. end)
+      |> List.to_string()
+      |> IO.puts()
+    end
   end
 end
