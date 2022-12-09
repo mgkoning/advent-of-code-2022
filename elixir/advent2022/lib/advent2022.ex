@@ -8,6 +8,7 @@ defmodule Advent2022 do
     6 => &Advent2022.Day06.solve/1,
     7 => &Advent2022.Day07.solve/1,
     8 => &Advent2022.Day08.solve/1,
+    9 => &Advent2022.Day09.solve/1,
   }
 
   def main(argv) do
