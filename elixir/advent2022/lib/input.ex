@@ -9,7 +9,7 @@ defmodule Advent2022.Input do
     |> List.to_tuple()
   end
 
-  def enumerated(enumerable) do
-    Stream.zip(Stream.iterate(0, &(&1 + 1)), enumerable)
+  def enumerated(enumerable, from \\ 0) do
+    Stream.zip(Stream.iterate(from, &(&1 + 1)), enumerable)
   end
 end
