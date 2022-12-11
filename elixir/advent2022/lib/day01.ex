@@ -21,7 +21,7 @@ defmodule Advent2022.Day01 do
   end
 
   defp read_elves(input) do
-    String.split(input, ~r/\n\n/)
+    Input.sections(input)
     |> Enum.map(&read_elf/1)
   end
 

@@ -1,4 +1,5 @@
 defmodule Advent2022.Day08 do
+  alias Advent2022.Common
   alias Advent2022.Input
 
   def solve(input) do
@@ -19,7 +20,7 @@ defmodule Advent2022.Day08 do
   defp tree_visible_from(side_enum, height), do: Enum.all?(side_enum, &(&1 < height))
 
   defp viewing_distance(side_enum, height) do
-    take_until_including(side_enum, &(height <= &1)) |> Enum.count()
+    Common.take_until_including(side_enum, &(height <= &1)) |> Enum.count()
   end
 
   defp run_neighbor_fn(grid, pos, fun) do
@@ -34,19 +35,14 @@ defmodule Advent2022.Day08 do
     end
   end
 
-  defp take_until_including([], _), do: []
-  defp take_until_including([x | xs], fun) do
-    [x | (if fun.(x), do: [], else: take_until_including(xs, fun))]
-  end
-
   def read_grid(input) do
     grid = input
     |> Input.lines
-    |> Input.enumerated()
+    |> Common.enumerated()
     |> Enum.flat_map(fn {y, line} ->
       line
       |> String.to_charlist
-      |> Input.enumerated()
+      |> Common.enumerated()
       |> Enum.map(fn {x, c} -> {{x, y}, c - ?0} end)
     end)
     Enum.into(grid, %{})

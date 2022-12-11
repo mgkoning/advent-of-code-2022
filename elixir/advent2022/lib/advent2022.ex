@@ -10,6 +10,7 @@ defmodule Advent2022 do
     8 => &Advent2022.Day08.solve/1,
     9 => &Advent2022.Day09.solve/1,
     10 => &Advent2022.Day10.solve/1,
+    11 => &Advent2022.Day11.solve/1,
   }
 
   def main(argv) do
@@ -30,7 +31,7 @@ defmodule Advent2022 do
     i
   end
 
-  defp file_name(day), do: "../../input/day#{str_day(day)}.txt"
-  defp str_day(day) when day < 10, do: "0#{day}"
-  defp str_day(day), do: Integer.to_string(day)
+  defp file_name(day) do
+    "../../input/day#{Integer.to_string(day) |> String.pad_leading(2, ["0"])}.txt"
+  end
 end

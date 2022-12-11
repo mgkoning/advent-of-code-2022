@@ -1,4 +1,5 @@
 defmodule Advent2022.Day10 do
+  alias Advent2022.Common
   alias Advent2022.Input
   def solve(input) do
     values = read_instructions(input)
@@ -17,7 +18,7 @@ defmodule Advent2022.Day10 do
 
   def part1(values) do
     values
-    |> Input.enumerated(1)
+    |> Common.enumerated(1)
     |> Stream.drop(19)
     |> Stream.take_every(40)
     |> Stream.map(fn {i, value} -> i * value end)

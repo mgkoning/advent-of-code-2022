@@ -2,7 +2,7 @@ defmodule Advent2022.Day05 do
   alias Advent2022.Input
   def solve(input) do
     [stacks_input, instructions_input] = input
-    |> String.split(~r/\n\n/)
+    |> Input.sections()
     stacks = read_stacks(stacks_input)
     instructions = read_instructions(instructions_input)
     IO.puts("Part 1:")
