@@ -38,12 +38,12 @@ defmodule Advent2022.Day08 do
   def read_grid(input) do
     grid = input
     |> Input.lines
-    |> Common.enumerated()
-    |> Enum.flat_map(fn {y, line} ->
+    |> Enum.with_index()
+    |> Enum.flat_map(fn {line, y} ->
       line
-      |> String.to_charlist
-      |> Common.enumerated()
-      |> Enum.map(fn {x, c} -> {{x, y}, c - ?0} end)
+      |> String.to_charlist()
+      |> Enum.with_index()
+      |> Enum.map(fn {c, x} -> {{x, y}, c - ?0} end)
     end)
     Enum.into(grid, %{})
   end

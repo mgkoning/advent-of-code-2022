@@ -9,4 +9,8 @@ defmodule Advent2022.Input do
     |> Enum.map(&map_elements_fn.(&1))
     |> List.to_tuple()
   end
+
+  def coord(value) do
+    tuple(value, ",", &String.to_integer/1)
+  end
 end
