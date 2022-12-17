@@ -4,13 +4,14 @@ end
 
 defmodule Zipper do
   @enforce_keys [:next]
-  defstruct next: [], prev: []
+  defstruct next: [], prev: [], show_cycle?: false
 
-  def advance(%Zipper{next: [n], prev: ps}) do
-    %Zipper{next: Enum.reverse([n | ps]), prev: []}
+  def advance(%Zipper{next: [n], prev: ps, show_cycle?: show_cycle?} = zipper) do
+    if show_cycle?, do: IO.puts("cycling")
+    %{zipper | next: Enum.reverse([n | ps]), prev: []}
   end
-  def advance(%Zipper{next: [n | ns], prev: ps}) do
-    %Zipper{next: ns, prev: [n | ps]}
+  def advance(%Zipper{next: [n | ns], prev: ps} = zipper) do
+    %{zipper | next: ns, prev: [n | ps]}
   end
 end
 
@@ -38,6 +39,8 @@ defmodule Advent2022.Day17 do
     gas_jets = read_gas_jets(input)
     IO.puts("Part 1:")
     IO.puts(part1(gas_jets))
+    IO.puts("Part 2:")
+    IO.puts(part2(gas_jets))
   end
 
   def part1(gas_jets_iteration) do
@@ -46,6 +49,21 @@ defmodule Advent2022.Day17 do
     |> Enum.take(1)
     #show_state(state_after_2022)
     state_after_2022.highest + 1
+  end
+
+  def part2(gas_jets_iteration) do
+    [state0, state1, state2] = run_simulation(gas_jets_iteration)
+    |> Stream.take_every(Enum.count(gas_jets_iteration))
+    |> Enum.take(3)
+    cycle_size = state2.rocks_done - state1.rocks_done
+    increase_by_cycle = state2.highest - state1.highest
+    calculable = 1000000000000 - state0.rocks_done
+    cycles = div(calculable, cycle_size)
+    left_over = rem(calculable, cycle_size)
+    [final_state] = run_simulation(gas_jets_iteration)
+    |> Stream.drop_while(fn state -> state.rocks_done < state0.rocks_done + left_over end)
+    |> Enum.take(1)
+    1 + state0.highest + cycles * increase_by_cycle + (final_state.highest - state0.highest)
   end
 
   def run_simulation(gas_jets_iteration) do
@@ -57,26 +75,20 @@ defmodule Advent2022.Day17 do
   def step(
     %SimState{
       jets: %Zipper{next: [jet | _]} = jets,
-      rocks: %Zipper{next: [rock | _]} = rocks,
-      filled: filled,
-      position: position,
-      highest: highest,
-      rocks_done: rocks_done} = state
+      rocks: %Zipper{next: [rock | _]} = rocks} = state
   ) do
-    pos_jet = do_move(rock, position, jet, filled)
-    pos_fall = do_move(rock, pos_jet, @down, filled)
+    pos_jet = do_move(rock, state.position, jet, state.filled)
+    pos_fall = do_move(rock, pos_jet, @down, state.filled)
     new_state = %{state | jets: Zipper.advance(jets)}
     if pos_jet != pos_fall do
       %{new_state | position: pos_fall}
     else
       rock_chunks = translate_rocks(rock, pos_fall)
-      new_filled = rock_chunks |> Enum.reduce(filled, &MapSet.put(&2, &1))
-      new_highest = max(highest, rock_chunks |> Enum.map(&elem(&1, 1)) |> Enum.max())
+      new_filled = rock_chunks |> Enum.reduce(state.filled, &MapSet.put(&2, &1))
+      new_highest = max(state.highest, rock_chunks |> Enum.map(&elem(&1, 1)) |> Enum.max())
       new_position = add({0, new_highest}, {2, 4})
-      new_rocks = Zipper.advance(rocks)
-      #show_state(new_rocks, new_state, rocks_done + 1)
-      %{new_state | rocks: new_rocks, filled: new_filled, position: new_position,
-          highest: new_highest, rocks_done: rocks_done + 1}
+      %{new_state | rocks: Zipper.advance(rocks), filled: new_filled, position: new_position,
+          highest: new_highest, rocks_done: state.rocks_done + 1}
     end
   end
 
@@ -98,26 +110,21 @@ defmodule Advent2022.Day17 do
     String.to_charlist(input) |> Enum.map(&if &1 == ?<, do: @left, else: @right)
   end
 
-  def show_state(%SimState{
-    rocks: %Zipper{next: [rock | _]},
-    filled: filled,
-    position: position,
-    highest: highest,
-    rocks_done: rocks_done}
-  ) do
-    rock_chunks = translate_rocks(rock, position)
+  def show_state(%SimState{rocks: %Zipper{next: [rock | _]}} = state, limit \\ -1) do
+    rock_chunks = translate_rocks(rock, state.position)
     highest_chunk = rock_chunks |> Enum.map(&elem(&1, 1)) |> Enum.max()
-    lines = for line <- 0..highest_chunk do
+    start_at = if limit < 0, do: 0, else: highest_chunk - limit
+    lines = for line <- start_at..max(highest_chunk, state.highest) do
       pixels = for x <- @left_edge..@right_edge do
         pos = {x, line}
-        if MapSet.member?(filled, pos), do: ?#, else:
+        if MapSet.member?(state.filled, pos), do: ?#, else:
         if Enum.member?(rock_chunks, pos), do: ?@, else:
         ?.
       end
       "|#{pixels}|"
     end
-    IO.puts("After #{rocks_done} (highest: #{highest})")
-    ["+-------+" | lines]
+    IO.puts("After #{state.rocks_done} (highest: #{state.highest})")
+    ((if limit < 0, do: ["+-------+"], else: ["~~~~~~~~~"]) ++ lines)
     |> Enum.reverse()
     |> Enum.join("\n")
     |> IO.puts()
