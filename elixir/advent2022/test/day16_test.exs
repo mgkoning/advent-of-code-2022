@@ -14,7 +14,8 @@ Valve II has flow rate=0; tunnels lead to valves AA, JJ
 Valve JJ has flow rate=21; tunnel leads to valve II"
 
   test "part 1" do
-    valves = read_valves(@sample_input)
-    assert part1(valves) == 1651
+    {flow_map, distances} = read_valves(@sample_input)
+    |> prepare_map()
+    assert part1(flow_map, distances) == 1651
   end
 end

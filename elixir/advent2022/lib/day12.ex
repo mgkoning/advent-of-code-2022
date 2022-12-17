@@ -1,5 +1,6 @@
 defmodule Advent2022.Day12 do
   alias Advent2022.Input
+  alias Advent2022.Common
   def solve(input) do
     {map, [start], [destination]} = read_map(input)
     IO.puts("Part 1:")
@@ -29,7 +30,7 @@ defmodule Advent2022.Day12 do
       length + 1
     else
       visited_new = Enum.reduce(neighbors, visited, fn n, acc -> MapSet.put(acc, n) end)
-      to_visit_new = Enum.reduce(neighbors, rest, fn n, acc -> insert_sorted(acc, {n, length + 1}) end)
+      to_visit_new = Enum.reduce(neighbors, rest, fn n, acc -> Common.insert_sorted(acc, {n, length + 1}) end)
       find_shortest_inner(map, destination, to_visit_new, visited_new)
     end
   end
@@ -38,15 +39,6 @@ defmodule Advent2022.Day12 do
     elevation = Map.fetch!(map, pos)
     adjacent = for {dx, dy} <- [{0, 1}, {0, -1}, {1, 0}, {-1, 0}], do: {x + dx, y + dy}
     Enum.filter(adjacent, fn pos -> Map.get(map, pos, @infinity) < elevation + 2 end)
-  end
-
-  defp insert_sorted([], v), do: [v]
-  defp insert_sorted([{_, length_head} = hd | rest], {_, length} = v) do
-    if length < length_head do
-      [v | [hd | rest]]
-    else
-      [hd | insert_sorted(rest, v)]
-    end
   end
 
   defp read_map(input) do

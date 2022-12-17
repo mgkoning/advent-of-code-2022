@@ -1,15 +1,49 @@
+defmodule Advent2022.Day16.State do
+  defstruct from: "AA", time: 0, distances: nil, flow_map: nil, visited: MapSet.new
+end
+
 defmodule Advent2022.Day16 do
   alias Advent2022.Input
   alias Advent2022.Common
+  alias Advent2022.Day16.State
 
   def solve(input) do
     IO.puts("Part 1:")
-    valve_map = read_valves(input)
-    part1(valve_map)
-    |> IO.puts()
+    {flow_map, distances} = read_valves(input)
+    |> prepare_map()
+    part1(flow_map, distances) |> IO.puts()
+    IO.puts("Part 2:")
+    part2(flow_map, distances) |> IO.puts()
   end
 
-  def part1(valve_map) do
+  def part1(flow_map, distances) do
+    maximum_flow(%State{time: 30, distances: distances, flow_map: flow_map}) |> elem(0)
+  end
+
+  def part2(flow_map, distances) do
+    start_state = %State{time: 26, distances: distances, flow_map: flow_map}
+    {max_self, path} = maximum_flow(start_state)
+    {max_elephant, _} = maximum_flow(%{start_state | visited: MapSet.new(path)})
+    max_self + max_elephant
+  end
+
+  def maximum_flow(%State{time: time}) when time <= 0, do: {0, []}
+  def maximum_flow(%State{from: from, time: time, visited: visited} = state) do
+    new_visited = MapSet.put(visited, from)
+
+    flow = Map.get(state.flow_map, from, 0)
+    time_remaining = time - (if 0 < flow, do: 1, else: 0)
+    neighbors = Map.get(state.distances, from, [])
+    |> Enum.filter(fn {n, dist} -> !MapSet.member?(new_visited, n) && dist < time_remaining end)
+
+    {max_flow_further, path_further} = neighbors
+    |> Enum.map(fn {to, dist} ->
+      maximum_flow(%{state | from: to, time: time_remaining-dist, visited: new_visited}) end)
+    |> Enum.max_by(&elem(&1, 0), &>=/2, fn -> {0, []} end)
+    {max_flow_further + flow * time_remaining, [from | path_further]}
+  end
+
+  def prepare_map(valve_map) do
     relevant_valves = find_relevant_valves(valve_map)
     tunnel_map = valve_map
     |> Enum.map(fn {name, {_, connections}} -> {name, connections} end)
@@ -17,30 +51,14 @@ defmodule Advent2022.Day16 do
     flow_map = valve_map
     |> Enum.map(fn {name, {flow, _}} -> {name, flow} end)
     |> Map.new
-    graph_distances = Enum.concat(["AA"], relevant_valves)
+    distances = Enum.concat(["AA"], relevant_valves)
     |> Enum.map(&{&1, all_distances(&1, tunnel_map)})
     |> Enum.map(fn {from, distance_map} ->
-       {from, distance_map
-                |> Enum.filter(fn {to, _} -> MapSet.member?(relevant_valves, to) end)} end)
+      relevant_distances = distance_map
+      |> Enum.filter(fn {to, _} -> MapSet.member?(relevant_valves, to) end)
+      {from, relevant_distances} end)
     |> Map.new
-    maximum_flow("AA", 30, graph_distances, flow_map)
-  end
-
-  def maximum_flow(from, time, graph_distances, flow_map, visited \\ MapSet.new)
-  def maximum_flow(_, n, _, _, _) when n <= 0, do: 0
-  def maximum_flow(from, n, graph_distances, flow_map, visited) do
-    flow = Map.get(flow_map, from, 0)
-    time_remaining = n - (if 0 < flow, do: 1, else: 0)
-    neighbors = Map.get(graph_distances, from, [])
-    |> Enum.filter(fn {n, dist} -> !MapSet.member?(visited, n) && dist < time_remaining end)
-    new_visited = MapSet.put(visited, from)
-    flow = Map.get(flow_map, from, 0)
-    time_remaining = n - (if 0 < flow, do: 1, else: 0)
-    max_flow_further = neighbors
-    |> Enum.map(fn {to, dist} ->
-                  maximum_flow(to, time_remaining-dist, graph_distances, flow_map, new_visited) end)
-    |> Enum.max(&>=/2, fn -> 0 end)
-    max_flow_further + flow * time_remaining
+    {flow_map, distances}
   end
 
   def all_distances(from, tunnel_map) do
