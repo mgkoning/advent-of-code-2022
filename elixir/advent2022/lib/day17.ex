@@ -2,25 +2,14 @@ defmodule Rock do
   defstruct rocks: [], name: ""
 end
 
-defmodule Zipper do
-  @enforce_keys [:next]
-  defstruct next: [], prev: [], show_cycle?: false
-
-  def advance(%Zipper{next: [n], prev: ps, show_cycle?: show_cycle?} = zipper) do
-    if show_cycle?, do: IO.puts("cycling")
-    %{zipper | next: Enum.reverse([n | ps]), prev: []}
-  end
-  def advance(%Zipper{next: [n | ns], prev: ps} = zipper) do
-    %{zipper | next: ns, prev: [n | ps]}
-  end
-end
-
 defmodule SimState do
   defstruct jets: nil, rocks: nil, filled: MapSet.new,
     position: {0, 0}, highest: 0, rocks_done: 0
 end
 
 defmodule Advent2022.Day17 do
+  alias Advent2022.Zipper
+
   @rocks %Zipper{next: [
     %Rock{rocks: [{0,0}, {1,0}, {2,0}, {3,0}], name: "minus"},
     %Rock{rocks: [{1,0}, {0,1}, {1,1}, {2,1}, {1,2}], name: "plus"},
