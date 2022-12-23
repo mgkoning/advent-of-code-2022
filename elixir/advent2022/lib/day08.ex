@@ -35,16 +35,5 @@ defmodule Advent2022.Day08 do
     end
   end
 
-  def read_grid(input) do
-    grid = input
-    |> Input.lines
-    |> Enum.with_index()
-    |> Enum.flat_map(fn {line, y} ->
-      line
-      |> String.to_charlist()
-      |> Enum.with_index()
-      |> Enum.map(fn {c, x} -> {{x, y}, c - ?0} end)
-    end)
-    Enum.into(grid, %{})
-  end
+  def read_grid(input), do: Input.read_grid(input, fn c -> c - ?0 end)
 end
