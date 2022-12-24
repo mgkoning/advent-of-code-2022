@@ -1,5 +1,6 @@
 defmodule Advent2022.Day22 do
   alias Advent2022.Input
+  alias Advent2022.Coord
 
   defmodule MonkeyMap do
     defstruct map: %{}, edges_by_row: %{}, edges_by_column: %{}
@@ -15,7 +16,7 @@ defmodule Advent2022.Day22 do
   def part1(monkey_map, instructions) do
     {start_pos, _} = Map.fetch!(monkey_map.edges_by_row, 1)
     {{x, y}, facing} = instructions
-    |> Enum.reduce({start_pos, {1, 0}}, &step(monkey_map, &1, &2))
+    |> Enum.reduce({{start_pos, 1}, {1, 0}}, &step(monkey_map, &1, &2))
     y * 1000 + x * 4 + facing_score(facing)
   end
 
@@ -31,9 +32,25 @@ defmodule Advent2022.Day22 do
   def step(_monkey_map, {:turn, ?R}, {pos, facing}), do: {pos, turn_right(facing)}
   def step(_monkey_map, {:turn, ?L}, {pos, facing}), do: {pos, turn_left(facing)}
   def step(monkey_map, {:move, n}, {pos, facing}) do
-    throw("not implemented")
+    new_pos = 1..n
+    |> Stream.scan(pos, fn _, acc -> move_with_wrap(acc, facing, monkey_map) end)
+    |> Enum.take_while(&Map.fetch!(monkey_map.map, &1) != ?#)
+    |> List.last(pos)
+    {new_pos, facing}
   end
 
+  defp move_with_wrap(pos, facing, monkey_map) do
+    new_pos = Coord.add(pos, facing)
+    if Map.has_key?(monkey_map.map, new_pos), do: new_pos, else: wrap(new_pos, facing, monkey_map)
+  end
+  defp wrap({x, y}, {0, _dy}, %MonkeyMap{edges_by_column: edges}) do
+    {min, max} = Map.fetch!(edges, x)
+    if y < min, do: {x, max}, else: {x, min}
+  end
+  defp wrap({x, y}, {_dx, 0}, %MonkeyMap{edges_by_row: edges}) do
+    {min, max} = Map.fetch!(edges, y)
+    if x < min, do: {max, y}, else: {min, y}
+  end
 
   # {1, 0} -> {0, 1} -> {-1, 0} -> {0, -1} -> {1, 0} => R {-1*y, x}
   defp turn_right({x, y}), do: {-1*y, x}
