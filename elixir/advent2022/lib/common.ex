@@ -12,4 +12,12 @@ defmodule Advent2022.Common do
       [hd | insert_sorted(rest, v)]
     end
   end
+
+  def combinations(n, []) when n > 0, do: []
+  def combinations(0, _), do: [[]]
+  def combinations(n, [x | xs]) do
+    combinations(n-1, xs)
+    |> Enum.map(&[x | &1])
+    |> Enum.concat(combinations(n, xs))
+  end
 end

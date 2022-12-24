@@ -18,4 +18,10 @@ Valve JJ has flow rate=21; tunnel leads to valve II"
     |> prepare_map()
     assert part1(flow_map, distances) == 1651
   end
+
+  test "part 2" do
+    {flow_map, distances} = read_valves(@sample_input)
+    |> prepare_map()
+    assert part2(flow_map, distances) == 1707
+  end
 end

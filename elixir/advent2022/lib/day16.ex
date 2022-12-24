@@ -13,7 +13,8 @@ defmodule Advent2022.Day16 do
     |> prepare_map()
     part1(flow_map, distances) |> IO.puts()
     IO.puts("Part 2:")
-    part2(flow_map, distances) |> IO.puts()
+    IO.puts("enable explicitly: pretty slow")
+    # part2(flow_map, distances) |> IO.puts()
   end
 
   def part1(flow_map, distances) do
@@ -21,10 +22,27 @@ defmodule Advent2022.Day16 do
   end
 
   def part2(flow_map, distances) do
+    relevant_valves = flow_map
+    |> Enum.flat_map(fn {k, v} -> if v != 0, do: [k], else: [] end)
+    |> MapSet.new
+    all_combinations = 1..div(Enum.count(relevant_valves), 2)
+    |> Enum.flat_map(&Common.combinations(&1, MapSet.to_list(relevant_valves)))
+    |> Enum.map(&MapSet.new(&1))
+    complements = all_combinations
+    |> Enum.map(fn combination -> MapSet.difference(relevant_valves, combination) end)
     start_state = %State{time: 26, distances: distances, flow_map: flow_map}
-    {max_self, path} = maximum_flow(start_state)
-    {max_elephant, _} = maximum_flow(%{start_state | visited: MapSet.new(path)})
-    max_self + max_elephant
+    scores = Enum.concat(all_combinations, complements)
+    |> Enum.uniq()
+    |> Enum.map(fn combination ->
+      {score, _} = maximum_flow(%{start_state | visited: MapSet.difference(relevant_valves, combination)})
+      {combination, score} end)
+    |> Map.new
+    all_combinations
+    |> Enum.map(fn combination ->
+      complement = MapSet.difference(relevant_valves, combination)
+      Map.fetch!(scores, combination) + Map.fetch!(scores, complement)
+    end)
+    |> Enum.max()
   end
 
   def maximum_flow(%State{time: time}) when time <= 0, do: {0, []}
