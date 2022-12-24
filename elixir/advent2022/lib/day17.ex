@@ -9,6 +9,7 @@ end
 
 defmodule Advent2022.Day17 do
   alias Advent2022.Zipper
+  alias Advent2022.Coord
 
   @rocks %Zipper{next: [
     %Rock{rocks: [{0,0}, {1,0}, {2,0}, {3,0}], name: "minus"},
@@ -75,24 +76,22 @@ defmodule Advent2022.Day17 do
       rock_chunks = translate_rocks(rock, pos_fall)
       new_filled = rock_chunks |> Enum.reduce(state.filled, &MapSet.put(&2, &1))
       new_highest = max(state.highest, rock_chunks |> Enum.map(&elem(&1, 1)) |> Enum.max())
-      new_position = add({0, new_highest}, {2, 4})
+      new_position = Coord.add({0, new_highest}, {2, 4})
       %{new_state | rocks: Zipper.advance(rocks), filled: new_filled, position: new_position,
           highest: new_highest, rocks_done: state.rocks_done + 1}
     end
   end
 
   defp do_move(rock, position, move, filled) do
-    new_position = add(position, move)
+    new_position = Coord.add(position, move)
     moved = rock |> translate_rocks(new_position)
     collided = Enum.any?(moved, fn {x, y} = pos ->
       x < @left_edge || @right_edge < x || y < 0 || MapSet.member?(filled, pos) end)
     if collided, do: position, else: new_position
   end
 
-  def add({x0, y0}, {x1, y1}), do: {x0 + x1, y0 + y1}
-
   def translate_rocks(%Rock{rocks: rocks}, move) do
-    rocks |> Enum.map(&add(&1, move))
+    rocks |> Enum.map(&Coord.add(&1, move))
   end
 
   def read_gas_jets(input) do

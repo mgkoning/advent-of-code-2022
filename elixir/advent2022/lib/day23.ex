@@ -1,5 +1,6 @@
 defmodule Advent2022.Day23 do
   alias Advent2022.Input
+  alias Advent2022.Coord
   defmodule State do
     defstruct elves: MapSet.new, order: [{0, -1}, {0, 1}, {-1, 0}, {1, 0}]
   end
@@ -49,7 +50,7 @@ defmodule Advent2022.Day23 do
   @directions for x <- -1..1, y <- -1..1, x != 0 || y != 0, do: {x, y}
 
   defp consider_move(elf, %State{elves: elves, order: order}) do
-    neighbors = Enum.map(@directions, &add(elf, &1))
+    neighbors = Enum.map(@directions, &Coord.add(elf, &1))
     if Enum.count(neighbors, &MapSet.member?(elves, &1)) < 1 do
       {elf, elf}
     else
@@ -58,14 +59,12 @@ defmodule Advent2022.Day23 do
         {0, 0}, # don't move if blocked in all directions; not explicit in puzzle description
         fn o ->
           side_neighbors = direction_neighbors(o)
-          |> Enum.map(&add(elf, &1))
+          |> Enum.map(&Coord.add(elf, &1))
           |> Enum.count(&MapSet.member?(elves, &1))
           side_neighbors < 1 end)
-      {elf, add(elf, direction)}
+      {elf, Coord.add(elf, direction)}
     end
   end
-
-  defp add({x0, y0}, {x1, y1}), do: {x0+x1, y0+y1}
 
   defp direction_neighbors({0, dy}), do: for dx <- -1..1, do: {dx, dy}
   defp direction_neighbors({dx, 0}), do: for dy <- -1..1, do: {dx, dy}
