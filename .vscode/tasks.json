@@ -27,6 +27,17 @@
       ],
       "options": {"cwd": "elixir/advent2022"},
       "command": "mix escript.build && ./advent2022"
+    },
+    {
+      "label": "run elixir 22",
+      "type": "shell",
+      "problemMatcher": [
+        { "base": "$mixCompileError"
+        , "fileLocation": ["relative", "${workspaceFolder}/elixir/advent2022"]
+        },
+      ],
+      "options": {"cwd": "elixir/advent2022"},
+      "command": "mix escript.build && ./advent2022 22"
     }
   ]
 }

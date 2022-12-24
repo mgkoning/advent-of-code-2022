@@ -19,14 +19,14 @@ defmodule Advent2022.Input do
     tuple(value, ",", &String.to_integer/1)
   end
 
-  def read_grid(input, convert_char) do
+  def read_grid(input, convert_char, offset_y \\ 0, offset_x \\ 0) do
     grid = input
     |> lines
-    |> Enum.with_index
+    |> Enum.with_index(offset_y)
     |> Enum.flat_map(fn {line, y} ->
       line
       |> String.to_charlist
-      |> Enum.with_index
+      |> Enum.with_index(offset_x)
       |> Enum.map(fn {c, x} -> {{x, y}, convert_char.(c)} end)
     end)
     Enum.into(grid, %{})
