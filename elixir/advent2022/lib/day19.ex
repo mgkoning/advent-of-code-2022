@@ -8,28 +8,70 @@ defmodule Advent2022.Day19 do
   def solve(input) do
     IO.puts("Part 1:")
     blueprints = read_blueprints(input)
-    IO.inspect(part1(blueprints))
+    IO.puts(part1(blueprints))
+    IO.puts("Part 2:")
+    IO.puts(part2(blueprints))
   end
 
   def part1(blueprints) do
     blueprints
-    |> Enum.map(&{elem(&1, 0), maximize_production(&1, 8, %State{})})
-    |> Enum.max_by(&{elem(&1, 1)})
+    |> Enum.map(&add_max_bots/1)
+    |> Enum.map(&{elem(&1, 0), maximize_production(&1, [{nil, 24, %State{}}])})
+    |> IO.inspect()
+    |> Enum.map(fn {id, max} -> id * max end)
+    |> Enum.sum()
   end
 
-  def maximize_production(_blueprint, time, state) when time <= 0, do: Keyword.get(state.resources, :geode)
-  def maximize_production({_id, bots} = blueprint, time, state) do
-    with_bots = for {:ok, {new_bots, new_resources}} <- Enum.map(bots, &build_bot(&1, state)) do
-      maximize_production(blueprint, time-1, %{state | bots: new_bots, resources: mine(state.bots, new_resources)})
+  def part2(blueprints) do
+    blueprints
+    |> Enum.take(3)
+    |> Enum.map(&add_max_bots/1)
+    |> Enum.map(&maximize_production(&1, [{nil, 32, %State{}}]))
+    |> IO.inspect()
+    |> Enum.product()
+  end
+
+  def maximize_production(blueprint, states, max \\ -1)
+  def maximize_production(_blueprint, [], max), do: max
+  def maximize_production({_id, bots, max_bots} = blueprint, [{type, time, state} | states], max) do
+    if time <= 0 do
+      #IO.inspect(state)
+      # out of time: the best we can do with this branch
+      maximize_production(blueprint, states, max(max, Keyword.fetch!(state.resources, :geode)))
+    else
+      {:ok, state_after_build} = case type do
+        nil -> {:ok, state}
+        _ -> build_bot({type, Keyword.fetch!(bots, type)}, state)
+      end
+      state_after_mine = %{state_after_build | resources: mine(state.bots, state_after_build.resources)}
+      max_possible = Keyword.fetch!(state_after_mine.bots, :geode) * (time-1) + div((time-2)*(time-1),2)
+      if Keyword.fetch!(state_after_mine.resources, :geode) + max_possible <= max do
+        # can't be better: skip this branch
+        maximize_production(blueprint, states, max)
+      else
+        bots_to_try = bots
+        |> Enum.filter(fn {type, requirements} ->
+          Keyword.get(state_after_mine.bots, type) < Keyword.get(max_bots, type)
+          && can_build(requirements, state_after_mine.resources) end)
+        |> Enum.map(&elem(&1, 0))
+        |> Enum.reverse()
+        next_states = (bots_to_try ++ [nil])
+        |> Enum.map(fn type -> {type, time-1, state_after_mine} end)
+
+        maximize_production(blueprint, next_states ++ states, max)
+      end
     end
-    Enum.max([maximize_production(blueprint, time-1, %{state | resources: mine(state.bots, state.resources)}) | with_bots])
   end
 
+  defp can_build(requirements,resources) do
+    requirements
+    |> Enum.all?(fn {type, number} -> number <= Keyword.fetch!(resources, type) end)
+  end
   defp build_bot({bot_type, requirements}, %State{resources: resources} = state) do
     resources_after_build = requirements
     |> Enum.reduce(resources, fn {type, number}, acc -> Keyword.update!(acc, type, & &1 - number) end)
     if Enum.all?(resources_after_build, fn {_type, number} -> 0 <= number end) do
-      {:ok, {Keyword.update(state.bots, bot_type, 1, & &1 + 1), resources_after_build}}
+      {:ok, %{state | bots: Keyword.update(state.bots, bot_type, 1, & &1 + 1), resources: resources_after_build}}
     else
       {:nope}
     end
@@ -38,6 +80,13 @@ defmodule Advent2022.Day19 do
   defp mine(bots, resources) do
     bots
     |> Enum.reduce(resources, fn {type, n}, acc -> Keyword.update!(acc, type, & &1 + n) end)
+  end
+
+  def add_max_bots({_id, bots} = blueprint) do
+    maxes = bots
+    |> Enum.reduce([], fn {_type, req}, a ->
+      Enum.reduce(req, a, fn {type, n}, acc -> Keyword.update(acc, type, n, &max(&1, n)) end) end)
+    Tuple.append(blueprint, maxes)
   end
 
   def read_blueprints(input) do

@@ -29,7 +29,7 @@
       "command": "mix escript.build && ./advent2022"
     },
     {
-      "label": "run elixir 22",
+      "label": "run elixir 19",
       "type": "shell",
       "problemMatcher": [
         { "base": "$mixCompileError"
@@ -37,7 +37,7 @@
         },
       ],
       "options": {"cwd": "elixir/advent2022"},
-      "command": "mix escript.build && ./advent2022 22"
+      "command": "mix escript.build && ./advent2022 19"
     }
   ]
 }
